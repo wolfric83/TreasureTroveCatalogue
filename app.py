@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify
 import mongoengine as me
 from models.model import Item, Weapon, Armor, Potion, TradeGood
+import config
 
 app = Flask(__name__)
-me.connect(host="<HostString>", alias='default')
+me.connect(host=config.host, alias='default')
 
 @app.route('/item', methods=['POST'])
 def create_item():
@@ -21,7 +22,7 @@ def get_item(item_id):
         return item.to_json()
     else:
         return jsonify({"error": "Item not found"}), 404
-        
+
 
 if __name__ == '__main__':
     app.run(debug=True)
