@@ -1,10 +1,8 @@
 import mongoengine as me
 
-me.connect(host="localhost", alias='default')
-
 # Base Item class
 class Item(me.Document):
-    item_id = me.StringField(required=True, unique=True)
+    item_id = me.IntField(required=True, unique=True)
     name = me.StringField(required=True)
     description = me.StringField()
     categories = me.ListField(me.StringField())
@@ -13,6 +11,8 @@ class Item(me.Document):
     weight = me.FloatField(required=True)
     value = me.IntField(required=True)
     flavor_text = me.StringField()
+    
+    meta = {'allow_inheritance': True}  # Enables subclass inheritance for MongoEngine
 
     def clean(self):
         rarity_scale = {
@@ -28,15 +28,31 @@ class Item(me.Document):
                 self.rarity_name = name
                 break
 
-item = Item(
-    item_id="weapon_001",
-    name="Iron Sword",
-    description="A sturdy iron sword with a sharp edge.",
-    categories=["Weapon", "Basic Equipment"],
-    rarity_value=45,  # Should be "Uncommon"
-    weight=5.0,
-    value=25,
-    flavor_text="A reliable weapon for any adventurer.",
-)
+# Subclass for Weapons
+class Weapon(Item):
+    damage_range = me.DictField(required=True)  # e.g., {"min": 10, "max": 20}
+    damage_type = me.StringField()              # e.g., "Physical" or "Magical"
+    weapon_subclass = me.StringField()  
+    required_skill = me.StringField()           # e.g., "Swordsmanship"
+    durability = me.IntField(default=100)       # Base Durability
 
-item.save()
+# Subclass for Armor
+class Armor(Item):
+    defense_rating = me.IntField(required=True)
+    armor_wear_location  = me.StringField()
+    armor_subclass = me.StringField()
+    armor_type = me.StringField()               # e.g., "Heavy", "Light"
+    elemental_resistance = me.DictField()       # e.g., {"fire": 10, "ice": 5}
+    durability = me.IntField(default=100)       # Base Durability
+
+# Subclass for Potions
+class Potion(Item):
+    effect = me.StringField(required=True)      # e.g., "Restores 50 HP"
+    duration = me.StringField()                 # e.g., "Instant"
+    is_consumable = me.BooleanField(default=True)
+
+# Subclass for Trade Goods
+class TradeGood(Item):
+    quality = me.StringField()                  # e.g., "Standard", "High"
+    origin = me.StringField()                   # Where the item is from
+    is_tradeable = me.BooleanField(default=True)
